@@ -1,0 +1,144 @@
+---
+title: "Robust_summaries"
+author: "Park Ju ho"
+date: '2021 11 20 '
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+```{r}
+library(tidyverse)
+library(dslabs)
+data(outlier_example)
+str(outlier_example)
+```
+#Robust_summaries
+이 단원에선 outlier를 다루는 방법을 학습
+
+## outlier Data 살펴보기
+Outlier Data는 미국 남성의 키(feet 단위)로 구성되어 있음
+```{r}
+mean(outlier_example)
+sd(outlier_example)
+```
+보면 sd가 7로 상당히 큰 것을 볼 수있음 => 뭔가 이상
+### boxplot확인
+```{r}
+boxplot(outlier_example)
+```
+<br><br>
+
+저 outlier가 상당히 큰 것을 확인 할 수 있음
+### summary확인
+```{r}
+summary(outlier_example)
+```
+현재 평균이 6피트 정도로 대략 186cm라고 볼 수 있음
+이는 말이 안 되는 수치 => 중간값(175)과 평균(186)을 비교해보면 상당한 차이가 남
+=> quantile들은 outlier에 큰 영향을 받지 않음
+
+## IQR
+boxplot 그릴 때 사용하는 거
+```{r}
+IQR(outlier_example)
+```
+### IQR/1.349 = std의 좋은 추정량
+만약 data가 정규성을 가진다면 이는 std의 좋은 추정량이 될 수 있다.
+```{r}
+IQR(outlier_example)/1.349
+sd(outlier_example)
+```
+## Tukey의 outlier 찾기
+**[Q1-1.5 X (Q3-Q1),Q3+1.5 X (Q3-Q1)]**
+이 range 밖에 존재하면 outlier라고 할 수 있음
+=> 이것을 이용하여 boxplot을 그림
+```{r}
+q3 = qnorm(0.75)
+q1 = qnorm(0.25)
+iqr = q3-q1
+r = c(q1-1.5*(iqr),q3+1.5*(iqr))
+r
+pnorm(r)
+```
+-2.7부터 2.7까지는 outlier가 아님
+즉 대략 99.3%의 data가 outlier가 아니라고 할 수 있음
+
+=> 만약 1.5가 아니라 3으로 계산하게 된다면 **far out outliers**라고 부름
+```{r}
+max_height=quantile(outlier_example,0.75)+3*IQR(outlier_example)
+max_height
+```
+
+## outlier 걸러내기
+```{r}
+x = outlier_example[outlier_example < max_height]
+summary(x)
+length(x)
+length(outlier_example)
+
+qqnorm(x)
+qqline(x)
+
+qqnorm(outlier_example)
+qqline(outlier_example)
+```
+
+## MAD
+outlier가 있을 때 중간값의 표준편차를 추정하는 방식
+```{r}
+mad(outlier_example)
+```
+```{r}
+outlier_example=tibble(outlier_example)
+outlier_example %>% 
+  ggplot(aes(x='',y=outlier_example))+
+  geom_boxplot()
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
